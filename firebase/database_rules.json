@@ -1,0 +1,210 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid",
+
+        "profile": {
+          ".validate": "newData.hasChildren(['uid', 'name', 'email', 'createdAt', 'lastLogin', 'level', 'xp', 'coins', 'streak'])",
+          "uid": {
+            ".validate": "newData.isString() && newData.val() == $uid"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+          },
+          "email": {
+            ".validate": "newData.isString() && newData.val().length > 0"
+          },
+          "photoUrl": {
+            ".validate": "newData.isString()"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() > 0"
+          },
+          "lastLogin": {
+            ".validate": "newData.isNumber() && newData.val() > 0"
+          },
+          "level": {
+            ".validate": "newData.isNumber() && newData.val() >= 1"
+          },
+          "xp": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "coins": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "streak": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+
+        "tree": {
+          ".validate": "newData.hasChildren(['treeLevel', 'treeStage', 'growthPercentage', 'treeType'])",
+          "treeLevel": {
+            ".validate": "newData.isNumber() && newData.val() >= 1"
+          },
+          "treeStage": {
+            ".validate": "newData.isString() && newData.val().length > 0"
+          },
+          "growthPercentage": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+          },
+          "lastGrowthDate": {
+            ".validate": "newData.isString()"
+          },
+          "treeType": {
+            ".validate": "newData.isString() && newData.val().length > 0"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+
+        "stats": {
+          ".validate": "newData.hasChildren(['totalXP', 'totalReflections', 'totalSleepHours', 'completedQuests', 'longestStreak', 'treeGrowthDays'])",
+          "totalXP": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "totalReflections": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "totalSleepHours": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "completedQuests": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "longestStreak": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "treeGrowthDays": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+
+        "settings": {
+          "theme": {
+            ".validate": "newData.isString() && (newData.val() == 'light' || newData.val() == 'dark')"
+          },
+          "notificationsEnabled": {
+            ".validate": "newData.isBoolean()"
+          },
+          "language": {
+            ".validate": "newData.isString() && (newData.val() == 'en' || newData.val() == 'id')"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+
+    "quests": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid",
+        "$questId": {
+          ".validate": "newData.hasChildren(['questId', 'title', 'description', 'rewardXP', 'rewardCoins', 'completed'])",
+          "questId": {
+            ".validate": "newData.isString() && newData.val().length > 0"
+          },
+          "title": {
+            ".validate": "newData.isString() && newData.val().length > 0"
+          },
+          "description": {
+            ".validate": "newData.isString()"
+          },
+          "rewardXP": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "rewardCoins": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "completed": {
+            ".validate": "newData.isBoolean()"
+          },
+          "completedAt": {
+            ".validate": "newData.isNumber() || newData.val() == null"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+
+    "reflections": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid",
+        "$date": {
+          ".validate": "newData.hasChildren(['date', 'mood', 'journal'])",
+          "date": {
+            ".validate": "newData.isString() && newData.val().length == 10"
+          },
+          "mood": {
+            ".validate": "newData.isString() && (newData.val() == 'Amazing' || newData.val() == 'Happy' || newData.val() == 'Peaceful' || newData.val() == 'Okay' || newData.val() == 'Sad' || newData.val() == 'Luar Biasa' || newData.val() == 'Senang' || newData.val() == 'Damai' || newData.val() == 'Biasa' || newData.val() == 'Sedih' || newData.val() == 'Lelah')"
+          },
+          "emotions": {
+            ".validate": "newData.isString() || newData.hasChildren()"
+          },
+          "journal": {
+            ".validate": "newData.isString() && newData.val().length > 0"
+          },
+          "gratitudeList": {
+            ".validate": "newData.isString() || newData.hasChildren()"
+          },
+          "tomorrowGoal": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+
+    "sleep": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid",
+        "$date": {
+          ".validate": "newData.hasChildren(['sleepTime', 'wakeTime', 'duration', 'qualityScore', 'sleepDate'])",
+          "sleepTime": {
+            ".validate": "newData.isNumber() && newData.val() > 0"
+          },
+          "wakeTime": {
+            ".validate": "newData.isNumber() && newData.val() > 0"
+          },
+          "duration": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 24"
+          },
+          "qualityScore": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+          },
+          "sleepDate": {
+            ".validate": "newData.isString() && newData.val().length == 10"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+
+    "achievements": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        "//": "Read-only for the client. Unlock logic must execute securely via Cloud Functions or Admin SDK.",
+        ".write": "false"
+      }
+    }
+  }
+}

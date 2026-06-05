@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "166037034537",
+    "firebase_url": "https://healtcare-dd7ea-default-rtdb.firebaseio.com",
+    "project_id": "healtcare-dd7ea",
+    "storage_bucket": "healtcare-dd7ea.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:166037034537:android:6b2ac2b9ec233cf5f26e38",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDR-UoQaNUb-X2vArqd0a5pVILC0_O7IGU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,74 +4,42 @@ import '../../../models/health_report.dart';
 import '../../home/providers/health_score_provider.dart';
 
 // Period provider: Daily, Weekly, Monthly
-final reportPeriodProvider = StateProvider<ReportPeriod>((ref) => ReportPeriod.daily);
+final reportPeriodProvider =
+    StateProvider<ReportPeriod>((ref) => ReportPeriod.daily);
 
-// Toggle to simulate Empty State for testing onboarding
-final statsEmptyStateProvider = StateProvider<bool>((ref) => false);
-
-// 30 days of data for the sparklines and charts
 final statsProvider = Provider<List<HealthDayReport>>((ref) {
   final score = ref.watch(healthScoreProvider);
-  final today = DateTime.now();
+  if (score.total == 0) return const [];
+
   return [
-    for (var i = 29; i >= 0; i--)
-      _reportForDay(today.subtract(Duration(days: i)), score.total, i),
+    HealthDayReport(
+      date: score.updatedAt,
+      score: score.total,
+      sleep: score.sleep,
+      quest: score.quest,
+      mood: score.mood,
+      activity: score.activity,
+      consistency: score.goodStreakDays > 0 ? 100 : 0,
+    ),
   ];
 });
 
-// Weekly summary data
 final weeklyStatsProvider = Provider<List<HealthDayReport>>((ref) {
-  final today = DateTime.now();
-  final list = <HealthDayReport>[];
-  for (var i = 4; i >= 0; i--) {
-    final date = today.subtract(Duration(days: i * 7));
-    // simulate weekly avg scores
-    final score = (78 - i * 4).clamp(40, 95);
-    list.add(HealthDayReport(
-      date: date,
-      score: score,
-      sleep: (score * .24).round().clamp(10, 25),
-      quest: (score * .23).round().clamp(10, 25),
-      mood: (score * .25).round().clamp(10, 25),
-      activity: (score * .22).round().clamp(10, 25),
-      consistency: (score * .8).round(),
-      hydration: (score * .95).round().clamp(50, 100),
-      nutrition: (score * .88).round().clamp(45, 100),
-    ));
-  }
-  return list;
+  return ref.watch(statsProvider);
 });
 
-// Monthly summary data
 final monthlyStatsProvider = Provider<List<HealthDayReport>>((ref) {
-  final today = DateTime.now();
-  final list = <HealthDayReport>[];
-  for (var i = 5; i >= 0; i--) {
-    final date = DateTime(today.year, today.month - i, 1);
-    final score = (82 - i * 6).clamp(50, 98);
-    list.add(HealthDayReport(
-      date: date,
-      score: score,
-      sleep: (score * .24).round().clamp(10, 25),
-      quest: (score * .23).round().clamp(10, 25),
-      mood: (score * .25).round().clamp(10, 25),
-      activity: (score * .22).round().clamp(10, 25),
-      consistency: (score * .8).round(),
-      hydration: (score * .95).round().clamp(50, 100),
-      nutrition: (score * .88).round().clamp(45, 100),
-    ));
-  }
-  return list;
+  return ref.watch(statsProvider);
 });
 
 // Traditional trend metrics
 final trendProvider = Provider<List<TrendMetric>>((ref) {
   final score = ref.watch(healthScoreProvider);
   return [
-    TrendMetric('Tidur', score.sleep, 17),
-    TrendMetric('Quest', score.quest, 12),
-    TrendMetric('Mood', score.mood, 16),
-    TrendMetric('Aktivitas', score.activity, 14),
+    TrendMetric('Tidur', score.sleep, score.sleep),
+    TrendMetric('Quest', score.quest, score.quest),
+    TrendMetric('Mood', score.mood, score.mood),
+    TrendMetric('Aktivitas', score.activity, score.activity),
   ];
 });
 
@@ -90,26 +58,7 @@ class GrowthMetric {
 }
 
 final growthAnalyticsProvider = Provider<List<GrowthMetric>>((ref) {
-  return const [
-    GrowthMetric(
-      label: '+15% Better Sleep',
-      improvementPercent: 15,
-      subtitle: 'Avg sleep duration increased by 45 mins',
-      category: 'sleep',
-    ),
-    GrowthMetric(
-      label: '+20% More Water Intake',
-      improvementPercent: 20,
-      subtitle: 'Reached hydration goal 6 days this week',
-      category: 'hydration',
-    ),
-    GrowthMetric(
-      label: '+10% More Active',
-      improvementPercent: 10,
-      subtitle: 'Active minutes rose to 45 mins/day',
-      category: 'activity',
-    ),
-  ];
+  return const [];
 });
 
 // Milestone data models
@@ -131,40 +80,7 @@ class HealthMilestone {
 }
 
 final milestonesProvider = Provider<List<HealthMilestone>>((ref) {
-  return const [
-    HealthMilestone(
-      id: 'm1',
-      title: 'First Quest Completed',
-      subtitle: 'Began the health journey',
-      emoji: '🌱',
-      completed: true,
-      date: '10 May 2026',
-    ),
-    HealthMilestone(
-      id: 'm2',
-      title: 'Reached Tree Level 5',
-      subtitle: 'Canopy is growing strong',
-      emoji: '🌳',
-      completed: true,
-      date: '20 May 2026',
-    ),
-    HealthMilestone(
-      id: 'm3',
-      title: 'Earned 10 Achievements',
-      subtitle: 'Unlocked milestones of consistency',
-      emoji: '🏆',
-      completed: true,
-      date: '28 May 2026',
-    ),
-    HealthMilestone(
-      id: 'm4',
-      title: 'Reached 30 Day Streak',
-      subtitle: 'Consistent daily garden care',
-      emoji: '🔥',
-      completed: false, // interactive - user can see progress or click
-      date: 'Locked',
-    ),
-  ];
+  return const [];
 });
 
 // Future Goals
@@ -186,29 +102,7 @@ class HealthGoal {
 }
 
 final futureGoalsProvider = Provider<List<HealthGoal>>((ref) {
-  return const [
-    HealthGoal(
-      id: 'g1',
-      title: '3 More Quests',
-      progress: 7,
-      target: 10,
-      reward: 'Level Up',
-    ),
-    HealthGoal(
-      id: 'g2',
-      title: '5 More Days Sleep Consistency',
-      progress: 2,
-      target: 7,
-      reward: 'New Badge',
-    ),
-    HealthGoal(
-      id: 'g3',
-      title: '200 XP Earned',
-      progress: 50,
-      target: 200,
-      reward: 'New Reward',
-    ),
-  ];
+  return const [];
 });
 
 // Smart Insights model
@@ -244,7 +138,7 @@ final insightsProvider = Provider<SmartInsight>((ref) {
   final score = ref.watch(healthScoreProvider);
 
   if (reports.isEmpty) {
-    return SmartInsight(
+    return const SmartInsight(
       bestDay: 'N/A',
       bestDayScore: 0,
       topCategory: 'Tidur',
@@ -261,13 +155,17 @@ final insightsProvider = Provider<SmartInsight>((ref) {
   final bestDay = days[best.date.weekday - 1];
 
   // Average score
-  final avgScore = (reports.fold<int>(0, (s, r) => s + r.score) / reports.length).round();
+  final avgScore =
+      (reports.fold<int>(0, (s, r) => s + r.score) / reports.length).round();
 
   // Top category
-  final avgSleep = reports.fold<int>(0, (s, r) => s + r.sleep) ~/ reports.length;
-  final avgQuest = reports.fold<int>(0, (s, r) => s + r.quest) ~/ reports.length;
+  final avgSleep =
+      reports.fold<int>(0, (s, r) => s + r.sleep) ~/ reports.length;
+  final avgQuest =
+      reports.fold<int>(0, (s, r) => s + r.quest) ~/ reports.length;
   final avgMood = reports.fold<int>(0, (s, r) => s + r.mood) ~/ reports.length;
-  final avgActivity = reports.fold<int>(0, (s, r) => s + r.activity) ~/ reports.length;
+  final avgActivity =
+      reports.fold<int>(0, (s, r) => s + r.activity) ~/ reports.length;
 
   final categoryScores = {
     'Tidur': avgSleep,
@@ -275,10 +173,12 @@ final insightsProvider = Provider<SmartInsight>((ref) {
     'Mood': avgMood,
     'Aktivitas': avgActivity,
   };
-  final topCategory = categoryScores.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+  final topCategory =
+      categoryScores.entries.reduce((a, b) => a.value > b.value ? a : b).key;
 
   // Weekly trend (last 7 vs previous 7)
-  final last7 = reports.length >= 7 ? reports.sublist(reports.length - 7) : reports;
+  final last7 =
+      reports.length >= 7 ? reports.sublist(reports.length - 7) : reports;
   final prev7 = reports.length >= 14
       ? reports.sublist(reports.length - 14, reports.length - 7)
       : <HealthDayReport>[];
@@ -291,13 +191,17 @@ final insightsProvider = Provider<SmartInsight>((ref) {
   // Smart recommendation
   String recommendation;
   if (score.sleep < 15) {
-    recommendation = 'Tidur kamu masih perlu ditingkatkan. Coba tidur lebih awal 30 menit malam ini!';
+    recommendation =
+        'Tidur kamu masih perlu ditingkatkan. Coba tidur lebih awal 30 menit malam ini!';
   } else if (score.quest < 15) {
-    recommendation = 'Kamu hampir di puncak performa! Selesaikan 1 quest lagi hari ini.';
+    recommendation =
+        'Kamu hampir di puncak performa! Selesaikan 1 quest lagi hari ini.';
   } else if (score.mood < 15) {
-    recommendation = 'Mood kamu bisa lebih baik. Coba 5 menit meditasi dengan alat relaksasi.';
+    recommendation =
+        'Mood kamu bisa lebih baik. Coba 5 menit meditasi dengan alat relaksasi.';
   } else {
-    recommendation = 'Performa kamu luar biasa! Pertahankan konsistensi untuk naik level. 🌟';
+    recommendation =
+        'Performa kamu luar biasa! Pertahankan konsistensi untuk naik level. 🌟';
   }
 
   final totalLearningMins = reports.fold<int>(0, (s, r) => s + r.quest) * 4;
@@ -312,28 +216,3 @@ final insightsProvider = Provider<SmartInsight>((ref) {
     weeklyTrend: weeklyTrend,
   );
 });
-
-// Helper for generating report data
-HealthDayReport _reportForDay(DateTime date, int currentScore, int index) {
-  final wave = (index % 7) - 3;
-  final score = index == 0 ? currentScore : (currentScore - wave * 3).clamp(20, 96);
-  final sleep = (score * .24 + wave).round().clamp(3, 25);
-  final quest = (score * .23 - wave).round().clamp(3, 25);
-  final mood = (score * .25 + 2).round().clamp(3, 25);
-  final activity = (score - sleep - quest - mood).clamp(3, 25);
-  
-  final hydration = (score * .9 + wave * 5).round().clamp(40, 100);
-  final nutrition = (score * .85 - wave * 4).round().clamp(35, 100);
-
-  return HealthDayReport(
-    date: date,
-    score: score,
-    sleep: sleep,
-    quest: quest,
-    mood: mood,
-    activity: activity,
-    consistency: (score * .8).round().clamp(0, 100),
-    hydration: hydration,
-    nutrition: nutrition,
-  );
-}

@@ -11,13 +11,12 @@ class StatsSleepAnalysis extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final reports = ref.watch(statsProvider);
     // Take last 7 days for the trend line
-    final last7 = reports.length >= 7 ? reports.sublist(reports.length - 7) : reports;
+    final last7 =
+        reports.length >= 7 ? reports.sublist(reports.length - 7) : reports;
 
     // Calculate averages
-    final avgSleep =
-        last7.fold<int>(0, (s, r) => s + r.sleep) / last7.length;
-    final avgScore =
-        last7.fold<int>(0, (s, r) => s + r.score) / last7.length;
+    final avgSleep = last7.fold<int>(0, (s, r) => s + r.sleep) / last7.length;
+    final avgScore = last7.fold<int>(0, (s, r) => s + r.score) / last7.length;
 
     // Sleep quality rating
     String qualityLabel;
@@ -146,8 +145,10 @@ class StatsSleepAnalysis extends ConsumerWidget {
         ),
         titlesData: FlTitlesData(
           show: true,
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -187,7 +188,7 @@ class StatsSleepAnalysis extends ConsumerWidget {
         ),
         borderData: FlBorderData(show: false),
         minX: 0,
-        maxX: (reports.length - 1).toDouble(),
+        maxX: reports.length <= 1 ? 1 : (reports.length - 1).toDouble(),
         minY: 0,
         maxY: 25,
         lineTouchData: LineTouchData(

@@ -3,35 +3,39 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../models/sleep_record.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../home/providers/health_score_provider.dart';
 
 final sleepProvider =
     StateNotifierProvider<SleepNotifier, List<SleepRecord>>((ref) {
-  return SleepNotifier(ref)..load();
+  final uid = ref.watch(authProvider.select((state) => state.user?.uid));
+  return SleepNotifier(ref, uid)..load();
 });
 
 class SleepNotifier extends StateNotifier<List<SleepRecord>> {
-  SleepNotifier(this.ref) : super(_seedRecords());
+  SleepNotifier(this.ref, this.uid) : super(const []);
 
   final Ref ref;
+  final String? uid;
   static const _boxName = 'sleep_box';
+
+  String get _recordsKey => uid == null ? 'records_guest' : 'records_$uid';
 
   Future<void> load() async {
     final box = await Hive.openBox(_boxName);
-    final stored = box.get('records');
+    final stored = box.get(_recordsKey);
     if (stored is List && stored.isNotEmpty) {
-      state = stored
-          .whereType<Map>()
-          .map(SleepRecord.fromMap)
-          .toList()
+      state = stored.whereType<Map>().map(SleepRecord.fromMap).toList()
         ..sort((a, b) => a.date.compareTo(b.date));
     }
   }
 
   Future<void> saveToday(TimeOfDay sleep, TimeOfDay wake) async {
     final now = DateTime.now();
-    var sleepDate = DateTime(now.year, now.month, now.day, sleep.hour, sleep.minute);
-    var wakeDate = DateTime(now.year, now.month, now.day, wake.hour, wake.minute);
+    var sleepDate =
+        DateTime(now.year, now.month, now.day, sleep.hour, sleep.minute);
+    var wakeDate =
+        DateTime(now.year, now.month, now.day, wake.hour, wake.minute);
     if (!wakeDate.isAfter(sleepDate)) {
       wakeDate = wakeDate.add(const Duration(days: 1));
     }
@@ -51,14 +55,15 @@ class SleepNotifier extends StateNotifier<List<SleepRecord>> {
     state = next.length > 30 ? next.sublist(next.length - 30) : next;
     await ref.read(healthScoreProvider.notifier).updateSleep(score ~/ 4);
     final box = await Hive.openBox(_boxName);
-    await box.put('records', state.map((record) => record.toMap()).toList());
+    await box.put(_recordsKey, state.map((record) => record.toMap()).toList());
   }
 
   String patternStatus() {
     final recent = state.length <= 7 ? state : state.sublist(state.length - 7);
     if (recent.isEmpty) return 'Stable';
-    final average = recent.fold<double>(0, (sum, item) => sum + item.durationHours) /
-        recent.length;
+    final average =
+        recent.fold<double>(0, (sum, item) => sum + item.durationHours) /
+            recent.length;
     final spread = recent
         .map((item) => (item.durationHours - average).abs())
         .fold<double>(0, (max, value) => value > max ? value : max);
@@ -71,18 +76,3 @@ class SleepNotifier extends StateNotifier<List<SleepRecord>> {
 
 bool _sameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
-
-List<SleepRecord> _seedRecords() {
-  final now = DateTime.now();
-  final hours = [6.5, 7.2, 8.0, 5.5, 7.7, 8.4, 7.9];
-  return [
-    for (var i = 0; i < hours.length; i++)
-      SleepRecord(
-        date: DateTime(now.year, now.month, now.day - (hours.length - i - 1)),
-        sleepTime: now.subtract(Duration(days: hours.length - i, hours: 8)),
-        wakeTime: now.subtract(Duration(days: hours.length - i, minutes: 30)),
-        durationHours: hours[i],
-        score: calculateSleepScore(hours[i]),
-      ),
-  ];
-}

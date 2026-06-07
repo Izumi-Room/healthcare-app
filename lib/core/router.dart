@@ -7,6 +7,7 @@ import '../features/auth/register_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/quest/quest_screen.dart';
 import '../features/reflection/reflection_screen.dart';
+import '../features/reflection/widgets/reflection_flow_screen.dart';
 import '../features/sleep/sleep_screen.dart';
 import '../features/stats/stats_screen.dart';
 import '../main_scaffold.dart';
@@ -68,6 +69,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/reflection',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: ReflectionScreen()),
+          ),
+          // Inside ShellRoute so bottom navbar stays visible during the flow
+          GoRoute(
+            path: '/reflection/flow',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ReflectionFlowScreen()),
           ),
         ],
       ),

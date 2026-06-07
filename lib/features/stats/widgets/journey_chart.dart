@@ -14,7 +14,7 @@ class JourneyChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final period = ref.watch(reportPeriodProvider);
-    
+
     // Get correct data based on period
     final List<HealthDayReport> rawData;
     if (isEmptyState) {
@@ -116,7 +116,8 @@ class JourneyChart extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.show_chart, size: 48, color: AppColors.textSecondary.withValues(alpha: .3)),
+          Icon(Icons.show_chart,
+              size: 48, color: AppColors.textSecondary.withValues(alpha: .3)),
           const SizedBox(height: 8),
           Text(
             'Grafik akan muncul setelah Anda mencatat aktivitas.',
@@ -150,8 +151,10 @@ class JourneyChart extends ConsumerWidget {
         ),
         titlesData: FlTitlesData(
           show: true,
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -160,7 +163,10 @@ class JourneyChart extends ConsumerWidget {
               getTitlesWidget: (value, meta) {
                 return Text(
                   value.toInt().toString(),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 10),
                 );
               },
             ),
@@ -174,7 +180,7 @@ class JourneyChart extends ConsumerWidget {
                 final idx = value.toInt();
                 if (idx < 0 || idx >= reports.length) return const SizedBox();
                 final date = reports[idx].date;
-                
+
                 String label;
                 if (period == ReportPeriod.daily) {
                   label = DateFormat.d().format(date);
@@ -188,7 +194,10 @@ class JourneyChart extends ConsumerWidget {
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
                     label,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 9),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 9),
                   ),
                 );
               },
@@ -197,7 +206,7 @@ class JourneyChart extends ConsumerWidget {
         ),
         borderData: FlBorderData(show: false),
         minX: 0,
-        maxX: (reports.length - 1).toDouble(),
+        maxX: reports.length <= 1 ? 1 : (reports.length - 1).toDouble(),
         minY: 0,
         maxY: 100,
         lineTouchData: LineTouchData(
@@ -215,7 +224,10 @@ class JourneyChart extends ConsumerWidget {
                           : DateFormat.yMMM().format(date);
                   return LineTooltipItem(
                     '$formattedDate\nScore: ${spot.y.toInt()}',
-                    const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                    const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12),
                   );
                 }
                 return null;

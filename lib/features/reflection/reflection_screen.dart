@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
 import '../../shared/widgets/mascot_helper.dart';
 import 'providers/reflection_trigger_provider.dart';
-import 'widgets/reflection_flow_screen.dart';
 import 'widgets/reflection_journal.dart';
 
 class ReflectionScreen extends ConsumerStatefulWidget {
@@ -26,11 +26,7 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
       ref.read(reflectionPromptHandledProvider.notifier).state = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const ReflectionFlowScreen(),
-            ),
-          );
+          context.push('/reflection/flow');
         }
       });
     }
@@ -137,11 +133,8 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const ReflectionFlowScreen(),
-                      ),
-                    );
+                    ref.read(reflectionPromptHandledProvider.notifier).state = true;
+                    context.push('/reflection/flow');
                   },
                   icon: const Icon(Icons.spa_rounded, size: 20),
                   label: const Text(

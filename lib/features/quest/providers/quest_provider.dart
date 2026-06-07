@@ -2,11 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../models/daily_quest.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../home/providers/health_score_provider.dart';
 
-final questProvider =
-    StateNotifierProvider<QuestNotifier, QuestState>((ref) {
-  return QuestNotifier(ref)..load();
+final questProvider = StateNotifierProvider<QuestNotifier, QuestState>((ref) {
+  final uid = ref.watch(authProvider.select((state) => state.user?.uid));
+  return QuestNotifier(ref, uid)..load();
 });
 
 class QuestState {
@@ -41,18 +42,25 @@ class QuestState {
 }
 
 class QuestNotifier extends StateNotifier<QuestState> {
-  QuestNotifier(this.ref) : super(QuestState.initial());
+  QuestNotifier(this.ref, this.uid) : super(QuestState.initial());
 
   final Ref ref;
+  final String? uid;
   static const _boxName = 'quest_box';
+
+  String get _prefix => uid == null ? 'guest' : uid!;
+  String get _dateKeyKey => 'dateKey_$_prefix';
+  String get _streakKey => 'streak_$_prefix';
+  String get _completedKey => 'completed_$_prefix';
 
   Future<void> load() async {
     final box = await Hive.openBox(_boxName);
     final today = _dateKey(DateTime.now());
-    final storedDate = box.get('dateKey') as String?;
-    final streak = box.get('streak') as int? ?? 0;
+    final storedDate = box.get(_dateKeyKey) as String?;
+    final streak = box.get(_streakKey) as int? ?? 0;
     if (storedDate == today) {
-      final completed = (box.get('completed') as List?)?.cast<String>() ?? [];
+      final completed =
+          (box.get(_completedKey) as List?)?.cast<String>() ?? [];
       state = QuestState(
         quests: _pickDailyQuests(ref.read(healthScoreProvider).sleep)
             .map((quest) => quest.copyWith(completed: completed.contains(quest.id)))
@@ -90,11 +98,14 @@ class QuestNotifier extends StateNotifier<QuestState> {
 
   Future<void> _save() async {
     final box = await Hive.openBox(_boxName);
-    await box.put('dateKey', state.dateKey);
-    await box.put('streak', state.streak);
+    await box.put(_dateKeyKey, state.dateKey);
+    await box.put(_streakKey, state.streak);
     await box.put(
-      'completed',
-      state.quests.where((quest) => quest.completed).map((quest) => quest.id).toList(),
+      _completedKey,
+      state.quests
+          .where((quest) => quest.completed)
+          .map((quest) => quest.id)
+          .toList(),
     );
   }
 }

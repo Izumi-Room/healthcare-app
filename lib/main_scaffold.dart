@@ -22,7 +22,13 @@ class MainScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    final index = _destinations.indexWhere((item) => item.path == location);
+    // Use startsWith so sub-routes (e.g. /reflection/flow) still highlight
+    // the correct parent tab. Longest-prefix wins to avoid '/' matching all.
+    final index = _destinations.lastIndexWhere(
+      (item) => item.path == '/'
+          ? location == '/'
+          : location.startsWith(item.path),
+    );
 
     return Scaffold(
       body: SafeArea(child: child),

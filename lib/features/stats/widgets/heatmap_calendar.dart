@@ -146,7 +146,8 @@ class _HeatmapCell extends StatelessWidget {
         onTap: () {
           showDialog<void>(
             context: context,
-            builder: (_) => AlertDialog(
+            barrierDismissible: true,
+            builder: (dialogContext) => AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -183,7 +184,7 @@ class _HeatmapCell extends StatelessWidget {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
                   child: const Text('Tutup',
                       style: TextStyle(color: AppColors.green600)),
                 ),

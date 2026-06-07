@@ -148,7 +148,7 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
             const SizedBox(height: 10),
             const _AchievementGallery(),
             const SizedBox(height: 16),
-            const _DailyLoginReward(),
+            _DailyLoginReward(streak: state.streak),
             const SizedBox(height: 16),
             _StreakSystemCard(streak: state.streak),
           ],
@@ -704,15 +704,19 @@ class _AchievementGallery extends StatelessWidget {
 }
 
 class _DailyLoginReward extends StatelessWidget {
-  const _DailyLoginReward();
+  const _DailyLoginReward({required this.streak});
+
+  final int streak;
 
   @override
   Widget build(BuildContext context) {
-    const rewards = [
-      _LoginRewardData('Day 1', 'XP', Icons.star_rounded, true),
-      _LoginRewardData('Day 2', 'Coins', Icons.monetization_on_outlined, true),
-      _LoginRewardData('Day 3', 'Badge', Icons.badge_outlined, false),
-      _LoginRewardData('Day 7', 'Special', Icons.card_giftcard_outlined, false),
+    final rewards = [
+      _LoginRewardData('Day 1', 'XP', Icons.star_rounded, streak >= 1),
+      _LoginRewardData(
+          'Day 2', 'Coins', Icons.monetization_on_outlined, streak >= 2),
+      _LoginRewardData('Day 3', 'Badge', Icons.badge_outlined, streak >= 3),
+      _LoginRewardData(
+          'Day 7', 'Special', Icons.card_giftcard_outlined, streak >= 7),
     ];
     return _GlassCard(
       padding: const EdgeInsets.all(16),
@@ -755,7 +759,7 @@ class _StreakSystemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bestStreak = math.max(streak, 12);
+    final bestStreak = streak;
     final nextReward = streak + (7 - streak % 7);
     return _GlassCard(
       padding: const EdgeInsets.all(16),

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/theme.dart';
 import '../providers/reflection_trigger_provider.dart';
@@ -172,14 +173,14 @@ class _ReflectionFlowScreenState extends ConsumerState<ReflectionFlowScreen> {
     _saveDraft();
   }
 
-  void _next() {
+  Future<void> _next() async {
     if (_currentStep < _totalSteps - 1) {
       if (_currentStep == 6) {
         // Generate summary before transitioning to summary step
         _goToStep(_currentStep + 1);
       } else if (_currentStep == 7 && !_saved) {
         // Save reflection when moving from summary to completion step
-        _saveReflection();
+        await _saveReflection();
         _goToStep(_currentStep + 1);
       } else {
         _goToStep(_currentStep + 1);
@@ -307,7 +308,7 @@ class _ReflectionFlowScreenState extends ConsumerState<ReflectionFlowScreen> {
               centerTitle: true,
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => context.pop(),
                   child: const Text(
                     'Tutup',
                     style: TextStyle(
@@ -350,7 +351,7 @@ class _ReflectionFlowScreenState extends ConsumerState<ReflectionFlowScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   // Step 0: Welcome
-                  FlowWelcomeStep(onNext: _next),
+                  FlowWelcomeStep(onNext: () { _next(); }),
                   // Step 1: Mood
                   FlowMoodStep(
                     selected: _mood.isNotEmpty ? _mood : null,
@@ -401,9 +402,8 @@ class _ReflectionFlowScreenState extends ConsumerState<ReflectionFlowScreen> {
                     intention: _intention,
                     summary: _generateSummary(),
                   ),
-                  // Step 8: Completion
                   FlowCompletionStep(
-                    onFinish: () => Navigator.of(context).pop(),
+                    onFinish: () => context.pop(),
                   ),
                 ],
               ),

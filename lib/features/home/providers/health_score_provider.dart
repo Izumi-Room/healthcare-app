@@ -2,17 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../../models/health_score.dart';
+import '../../auth/providers/auth_provider.dart';
 
 final healthScoreProvider =
     StateNotifierProvider<HealthScoreNotifier, HealthScore>((ref) {
-  return HealthScoreNotifier()..load();
+  final uid = ref.watch(authProvider.select((state) => state.user?.uid));
+  return HealthScoreNotifier(uid)..load();
 });
 
 class HealthScoreNotifier extends StateNotifier<HealthScore> {
-  HealthScoreNotifier() : super(HealthScore.initial());
+  HealthScoreNotifier(this.uid) : super(HealthScore.initial());
 
+  final String? uid;
   static const _boxName = 'health_score_box';
-  static const _key = 'latest';
+
+  String get _key => uid == null ? 'guest' : 'latest_$uid';
 
   Future<void> load() async {
     final box = await Hive.openBox(_boxName);
@@ -35,19 +39,6 @@ class HealthScoreNotifier extends StateNotifier<HealthScore> {
 
   Future<void> addQuestPoints(int points) {
     return _update(quest: (state.quest + points).clamp(0, 25));
-  }
-
-  Future<void> demoAdjust(String key, int delta) {
-    switch (key) {
-      case 'sleep':
-        return _update(sleep: (state.sleep + delta).clamp(0, 25));
-      case 'quest':
-        return _update(quest: (state.quest + delta).clamp(0, 25));
-      case 'mood':
-        return _update(mood: (state.mood + delta).clamp(0, 25));
-      default:
-        return _update(activity: (state.activity + delta).clamp(0, 25));
-    }
   }
 
   Future<void> _update({

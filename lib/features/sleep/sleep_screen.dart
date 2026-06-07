@@ -7,11 +7,9 @@ import '../../shared/widgets/mascot_helper.dart';
 import 'widgets/sleep_hero_section.dart';
 import 'widgets/sleep_score_card.dart';
 import 'widgets/sleep_plan_card.dart';
-import 'widgets/sleep_journey_visualization.dart';
 import 'widgets/weekly_sleep_garden.dart';
 import 'widgets/relaxation_tools.dart';
 import 'widgets/sleep_streak_card.dart';
-import 'widgets/sleep_achievements.dart';
 import 'widgets/sleep_input_sheet.dart';
 
 class SleepScreen extends ConsumerStatefulWidget {
@@ -40,24 +38,28 @@ class _SleepScreenState extends ConsumerState<SleepScreen> {
     final status = ref.read(sleepProvider.notifier).patternStatus();
 
     final latestRecord = records.isNotEmpty ? records.last : null;
-    final sleepScore = latestRecord?.score ?? 87;
-    final sleepStatus = latestRecord != null
-        ? (latestRecord.score >= 85
+    final sleepScore = latestRecord?.score;
+    final sleepStatus = latestRecord == null
+        ? null
+        : latestRecord.score >= 85
             ? 'Excellent Sleep'
             : latestRecord.score >= 60
                 ? 'Good Sleep'
-                : 'Poor Sleep')
-        : 'Excellent Sleep';
+                : 'Poor Sleep';
 
     return Theme(
       data: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.transparent,
         cardColor: const Color(0xFF0F172A),
         textTheme: const TextTheme(
-          displaySmall: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30),
-          headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24),
-          headlineSmall: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-          titleMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
+          displaySmall: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30),
+          headlineMedium: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24),
+          headlineSmall: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          titleMedium: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
           bodyMedium: TextStyle(color: Colors.white70, fontSize: 14),
           bodySmall: TextStyle(color: Colors.white38, fontSize: 12),
         ),
@@ -101,21 +103,24 @@ class _SleepScreenState extends ConsumerState<SleepScreen> {
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
                       builder: (_) => SleepInputSheet(
-                        onSave: (sleep, wake) =>
-                            ref.read(sleepProvider.notifier).saveToday(sleep, wake),
+                        onSave: (sleep, wake) => ref
+                            .read(sleepProvider.notifier)
+                            .saveToday(sleep, wake),
                       ),
                     );
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF8B5CF6), // Purple accent
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Log Sleep', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text('Log Sleep',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -133,15 +138,17 @@ class _SleepScreenState extends ConsumerState<SleepScreen> {
                 const SizedBox(height: 16),
 
                 // 2. Motivation Section
-                const _MotivationCard(),
+                _MotivationCard(hasRecords: records.isNotEmpty),
                 const SizedBox(height: 20),
 
-                // 3. Sleep Score Card
-                SleepScoreCard(
-                  score: sleepScore,
-                  status: sleepStatus,
-                ),
-                const SizedBox(height: 20),
+                if (sleepScore != null && sleepStatus != null) ...[
+                  // 3. Sleep Score Card
+                  SleepScoreCard(
+                    score: sleepScore,
+                    status: sleepStatus,
+                  ),
+                  const SizedBox(height: 20),
+                ],
 
                 // 4. Tonight's Sleep Plan
                 SleepPlanCard(
@@ -157,27 +164,27 @@ class _SleepScreenState extends ConsumerState<SleepScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // 5. Sleep Journey Visualization
-                const SleepJourneyVisualization(),
-                const SizedBox(height: 20),
+                if (records.isNotEmpty) ...[
+                  // 5. Weekly Sleep Garden
+                  WeeklySleepGarden(records: records),
+                  const SizedBox(height: 20),
 
-                // 6. Weekly Sleep Garden
-                WeeklySleepGarden(records: records),
-                const SizedBox(height: 20),
+                  // 6. Sleep Insights
+                  _SleepInsightsPanel(
+                    patternStatus: status,
+                    latestDurationHours: latestRecord!.durationHours,
+                    latestScore: latestRecord.score,
+                  ),
+                  const SizedBox(height: 20),
 
-                // 7. Sleep Insights
-                _SleepInsightsPanel(patternStatus: status),
-                const SizedBox(height: 20),
+                  // 7. Sleep Streak Card
+                  SleepStreakCard(
+                    streakDays: ref.watch(healthScoreProvider).goodStreakDays,
+                  ),
+                  const SizedBox(height: 20),
+                ],
 
-                // 8. Sleep Streak Card
-                SleepStreakCard(streakDays: ref.watch(healthScoreProvider).goodStreakDays),
-                const SizedBox(height: 20),
-
-                // 9. Sleep Achievement System
-                const SleepAchievements(),
-                const SizedBox(height: 20),
-
-                // 10. Relaxation Tools
+                // 8. Relaxation Tools
                 const RelaxationTools(),
               ],
             ),
@@ -192,7 +199,8 @@ class _SleepScreenState extends ConsumerState<SleepScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF0F172A),
-        title: const Text('Sleep Guide', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Sleep Guide',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         content: const Text(
           'A healthy sleep routine keeps your Vitality Tree blooming. Try to maintain a consistent bedtime, wind down with relaxation sounds, and aim for 8 hours of rest each night.',
           style: TextStyle(color: Colors.white70),
@@ -200,7 +208,8 @@ class _SleepScreenState extends ConsumerState<SleepScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it', style: TextStyle(color: Color(0xFFC084FC))),
+            child: const Text('Got it',
+                style: TextStyle(color: Color(0xFFC084FC))),
           ),
         ],
       ),
@@ -209,25 +218,37 @@ class _SleepScreenState extends ConsumerState<SleepScreen> {
 }
 
 class _MotivationCard extends StatelessWidget {
-  const _MotivationCard();
+  const _MotivationCard({required this.hasRecords});
+
+  final bool hasRecords;
 
   @override
   Widget build(BuildContext context) {
-    return const MascotCompanionCardDark(
-      title: "Night Routine Companion",
-      message: "You're only 1 good night away from your next reward. Sleep before 22:00 to keep your streak.",
+    return MascotCompanionCardDark(
+      title: hasRecords ? 'Night Routine Companion' : 'Belum ada data tidur',
+      message: hasRecords
+          ? "You're only 1 good night away from your next reward. Sleep before 22:00 to keep your streak."
+          : 'Catat tidur pertama Anda untuk melihat skor, pola, insight, dan pencapaian tidur.',
       mood: MascotMood.wink,
     );
   }
 }
 
 class _SleepInsightsPanel extends StatelessWidget {
-  const _SleepInsightsPanel({required this.patternStatus});
+  const _SleepInsightsPanel({
+    required this.patternStatus,
+    required this.latestDurationHours,
+    required this.latestScore,
+  });
 
   final String patternStatus;
+  final double latestDurationHours;
+  final int latestScore;
 
   @override
   Widget build(BuildContext context) {
+    final durationText = latestDurationHours.toStringAsFixed(1);
+
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -248,35 +269,32 @@ class _SleepInsightsPanel extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
               ),
-              const Icon(Icons.psychology_outlined, color: Color(0xFFFEF08A), size: 20),
+              const Icon(Icons.psychology_outlined,
+                  color: Color(0xFFFEF08A), size: 20),
             ],
           ),
           const SizedBox(height: 18),
-          const _InsightItem(
+          _InsightItem(
             icon: Icons.check_circle_outline,
-            iconColor: Color(0xFF34D399),
-            text: 'You slept 45 minutes longer than yesterday',
-          ),
-          const SizedBox(height: 12),
-          const _InsightItem(
-            icon: Icons.check_circle_outline,
-            iconColor: Color(0xFF34D399),
-            text: 'Your sleep quality improved this week',
+            iconColor: const Color(0xFF34D399),
+            text: 'Durasi tidur terakhir: $durationText jam.',
           ),
           const SizedBox(height: 12),
           _InsightItem(
             icon: Icons.warning_amber_rounded,
             iconColor: const Color(0xFFFBBF24),
-            text: _consistencyText(patternStatus),
+            text: _consistencyText(patternStatus, latestScore),
           ),
         ],
       ),
     );
   }
 
-  String _consistencyText(String status) {
+  String _consistencyText(String status, int score) {
     return switch (status) {
-      'Stable' => 'Bedtime consistency is excellent and stable!',
+      'Stable' => score >= 80
+          ? 'Kualitas tidur terakhir sudah baik.'
+          : 'Kualitas tidur terakhir masih bisa ditingkatkan.',
       'Irregular' => 'Bedtime consistency can be improved',
       'Insufficient' => 'Daily sleep duration is currently low',
       'Excessive' => 'Daily sleep duration is longer than average',

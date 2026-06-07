@@ -43,12 +43,12 @@ class HealthScore {
 
   factory HealthScore.initial() {
     return HealthScore(
-      sleep: 18,
-      quest: 10,
-      mood: 17,
-      activity: 13,
-      previousTotal: 55,
-      goodStreakDays: 1,
+      sleep: 0,
+      quest: 0,
+      mood: 0,
+      activity: 0,
+      previousTotal: 0,
+      goodStreakDays: 0,
       updatedAt: DateTime.now(),
     );
   }

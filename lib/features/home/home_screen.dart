@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../shared/widgets/mascot_helper.dart';
 
 import '../../core/theme.dart';
+import '../auth/providers/auth_provider.dart';
 import '../../models/health_score.dart';
 import 'providers/health_score_provider.dart';
 import 'widgets/tree_widget.dart';
@@ -86,10 +86,6 @@ class HomeScreen extends ConsumerWidget {
             _TreeSignalPanel(items: treeSignals),
             const SizedBox(height: 16),
             _JourneyPanel(score: score),
-            if (kDebugMode) ...[
-              const SizedBox(height: 16),
-              const _RewardLab(),
-            ],
           ],
         ),
       ],
@@ -97,14 +93,17 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _HeroHeader extends StatelessWidget {
+class _HeroHeader extends ConsumerWidget {
   const _HeroHeader({required this.score});
 
   final HealthScore score;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final date = DateFormat('EEEE, d MMM').format(DateTime.now());
+    final authState = ref.watch(authProvider);
+    final userName = authState.user?.displayName?.trim();
+
     return Row(
       children: [
         Expanded(
@@ -114,7 +113,9 @@ class _HeroHeader extends StatelessWidget {
               Text(date, style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 4),
               Text(
-                'Hi, Alya',
+                userName == null || userName.isEmpty
+                    ? 'Hi, User'
+                    : 'Hi, $userName',
                 style: Theme.of(context).textTheme.displaySmall,
               ),
               const SizedBox(height: 4),
@@ -148,9 +149,45 @@ class _HeroHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const _UserAvatar(),
+        Tooltip(
+          message: 'Profile',
+          child: InkWell(
+            borderRadius: BorderRadius.circular(21),
+            onTap: authState.isLoading
+                ? null
+                : () => _showLogoutConfirmation(context, ref),
+            child: const _UserAvatar(),
+          ),
+        ),
       ],
     );
+  }
+
+  Future<void> _showLogoutConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Keluar dari akun?'),
+        content: const Text('Apakah anda yakin ingin keluar?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await ref.read(authProvider.notifier).signOut();
+    }
   }
 }
 
@@ -606,35 +643,6 @@ class _UnlockableRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _RewardLab extends ConsumerWidget {
-  const _RewardLab();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return _GlassCard(
-      padding: const EdgeInsets.all(12),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final key in ['sleep', 'mood', 'activity'])
-            OutlinedButton(
-              onPressed: () =>
-                  ref.read(healthScoreProvider.notifier).demoAdjust(key, 4),
-              child: Text('+$key'),
-            ),
-          OutlinedButton(
-            onPressed: () => ref
-                .read(healthScoreProvider.notifier)
-                .demoAdjust('activity', -8),
-            child: const Text('-activity'),
-          ),
-        ],
-      ),
     );
   }
 }
